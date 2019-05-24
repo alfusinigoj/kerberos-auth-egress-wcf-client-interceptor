@@ -29,13 +29,28 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Solution] readonly Solution Solution;
-    [GitRepository] readonly GitRepository GitRepository;
-    [GitVersion] readonly GitVersion GitVersion;
+    [Parameter("ApiKey for the specified source.")] 
+    readonly string ApiKey;
+
+    [Solution] 
+    readonly Solution Solution;
+
+    [GitRepository] 
+    readonly GitRepository GitRepository;
+
+    [GitVersion] 
+    readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
+    AbsolutePath ProjectDirectory => SourceDirectory / "RouteServiceIwaWcfInterceptor";
+    AbsolutePath ProjectFile => ProjectDirectory / "RouteServiceIwaWcfInterceptor.csproj";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    
+    string Branch => GitRepository.Branch;
+    string ChangelogFile => RootDirectory / "CHANGELOG.md";
+
+    string Source => @"c:\MyLocalNugetRepo";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -77,31 +92,27 @@ class Build : NukeBuild
 
         DotNetTasks.DotNetPack(s => s
             .SetPackageReleaseNotes(changelogUrl)
-            .SetWorkingDirectory(SolutionDirectory)
-            .SetProject(SolutionFile)
+            .SetWorkingDirectory(ProjectDirectory)
+            .SetProject(ProjectFile)
             .EnableNoBuild()
             .SetConfiguration(Configuration)
             .EnableIncludeSymbols()
-            .SetOutputDirectory(OutputDirectory)
+            .SetOutputDirectory(ArtifactsDirectory)
             .SetVersion(GitVersion.NuGetVersionV2));
-
-        // Or using default settings:
-        DotNetPack(s => DefaultDotNetPack
-            .SetPackageReleaseNotes(changelogUrl));
     });
 
-    Target Publish => _ => _
-    .DependsOn(Pack)
-    .Requires(() => ApiKey)
-    .Requires(() => !NuGet || Configuration.EqualsOrdinalIgnoreCase("release"))
-    .Executes(() =>
-    {
-        GlobFiles(OutputDirectory, "*.nupkg").NotEmpty()
-            .Where(x => !x.EndsWith(".symbols.nupkg"))
-            .ForEach(x => DotNetNuGetPush(s => s
-                .SetTargetPath(x)
-                .SetSource(Source)
-                .SetApiKey(ApiKey)
-                ));
-    });
+    // Target Push => _ => _
+    // .DependsOn(Pack)
+    // //.Requires(() => ApiKey)
+    // .Requires(() => Source)
+    // .Executes(() =>
+    // {
+    //     GlobFiles(ArtifactsDirectory, "*.nupkg").NotEmpty()
+    //         .Where(x => !x.EndsWith(".symbols.nupkg"))
+    //         .ForEach(x => DotNetNuGetPush(s => s
+    //             .SetTargetPath(x)
+    //             .SetSource(Source)
+    //            // .SetApiKey(ApiKey)
+    //             ));
+    // });
 }
