@@ -3,7 +3,7 @@ using System.ServiceModel.Configuration;
 
 namespace Pivotal.RouteServiceIwaWcfInterceptor
 {
-    public class MyIwaInterceptorBehaviourExtensionElement : BehaviorExtensionElement
+    public class IwaInterceptorBehaviourExtensionElement : BehaviorExtensionElement
     {
         public override Type BehaviorType => typeof(IwaInterceptorEndpointBehaviour);
 

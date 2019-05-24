@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RouteServiceIwaWcfInterceptor", "src\RouteServiceIwaWcfInterceptor\RouteServiceIwaWcfInterceptor.csproj", "{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RouteServiceIwaWcfInterceptor", "src\RouteServiceIwaWcfInterceptor\RouteServiceIwaWcfInterceptor.csproj", "{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5C1B79F2-2D54-493D-A284-8D26335B9086}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RouteServiceIwaWcfInterceptor", "build\RouteServiceIwaWcfInterceptor.csproj", "{AA175E6F-3B28-4BB1-AFF3-C691C93E66A6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{24E2B2CF-BAF5-431D-8408-049DD98C1899}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{FEDC3C83-B149-47DD-A40E-90BDC7388B17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,20 +17,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{24E2B2CF-BAF5-431D-8408-049DD98C1899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{24E2B2CF-BAF5-431D-8408-049DD98C1899}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA175E6F-3B28-4BB1-AFF3-C691C93E66A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA175E6F-3B28-4BB1-AFF3-C691C93E66A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24E2B2CF-BAF5-431D-8408-049DD98C1899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E2B2CF-BAF5-431D-8408-049DD98C1899}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EB6D956D-2480-47C4-A8FF-F98FAFCF1A52} = {5C1B79F2-2D54-493D-A284-8D26335B9086}
+		{24E2B2CF-BAF5-431D-8408-049DD98C1899} = {FEDC3C83-B149-47DD-A40E-90BDC7388B17}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {445EFD3B-96C7-47A3-A00B-EB0586A7EC18}
