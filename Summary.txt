@@ -1,0 +1,16 @@
+if client...
+
+1. WcfClientInterceptor 									---> BP
+	1. GetOrUse TGT
+	2. Get Token from KDC
+		Need to know the client caller upn (e.g WartmanGr@XXX)
+		Need to know the target spm (e.g. host/<url>)
+2. Interceptor Behaviour									---> BP
+3. Interceptor Behaviour Extension								---> BP
+4. Modify web.config accordingly								---> BP
+
+---> c++ redistributable packages from MIT (Andrew's myget packages) 				---> BP can do this easily
+---> Kerberos config file 									---> Nuget package template (At the last if required)
+---> Client/Caller UPN's Keytab file 								---> App Dev to create and add it in the app root
+---> Set environment variable for specifying the path where the kerberos config file exists	---> App Dev
+---> modify the kerberos config file with proper realms (domain, mip, etc.)			---> App Dev
