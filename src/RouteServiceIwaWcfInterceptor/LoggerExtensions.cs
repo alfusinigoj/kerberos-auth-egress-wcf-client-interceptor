@@ -15,10 +15,9 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
         static LoggerExtensions()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging(builder => builder.AddConsole());
             serviceCollection.AddLogging((builder) =>
             {
-                builder.AddConfiguration(new ConfigurationBuilder().AddEnvironmentVariables().Build());
+                builder.AddConfiguration(new ConfigurationBuilder().AddEnvironmentVariables().Build().GetSection("PivotalIwaWcfClientInterceptor"));
                 builder.AddConsole();
             });
             var serviceProvider = serviceCollection.BuildServiceProvider();

@@ -24,4 +24,4 @@ This package will add a Wcf client interceptor which will injects kerberos ticke
 		</client>
 	</system.serviceModel>
   ```
-8. To see debug logs, please set the log level to "Debug", via environment variable "Logging:LogLevel:Default"
+8. To see debug logs, please set the log level to "Debug", via environment variable "PivotalIwaWcfClientInterceptor:LogLevel:Default"
