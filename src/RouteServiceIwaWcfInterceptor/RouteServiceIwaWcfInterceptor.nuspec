@@ -11,6 +11,9 @@
     <copyright>Copyright © 2019</copyright>
     <dependencies>
       <dependency id="AspNetCore.Authentication.GssKerberos" version="0.1.81-beta" />
+      <dependency id="Microsoft.Extensions.Configuration.EnvironmentVariables" version="2.2.4" />
+      <dependency id="Microsoft.Extensions.DependencyInjection" version="2.2.0" />
+      <dependency id="Microsoft.Extensions.Logging.Console" version="2.2.0" />
     </dependencies>
   </metadata>
   <files>
