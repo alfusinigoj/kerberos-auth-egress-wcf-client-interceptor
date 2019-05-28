@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.GssKerberos;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -11,14 +12,17 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
 {
     public class SvcRequestIwaInterceptor : IClientMessageInspector
     {
-        const string CONTAINER_APP_BIN_PATH = @"C:\Users\vcap\app\bin";
+        const string APP_BIN_PATH_ENV_NM = "APP_BIN_PATH";
+        const string CONTAINER_APP_DEFAULT_BIN_PATH = @"C:\Users\vcap\app\bin";
+        readonly string APP_BIN_PATH;
         private const string AUTHORIZATION_HEADER = "Authorization";
 
         public SvcRequestIwaInterceptor()
         {
+            APP_BIN_PATH = Environment.GetEnvironmentVariable(APP_BIN_PATH_ENV_NM) ?? CONTAINER_APP_DEFAULT_BIN_PATH;
+            this.Logger().LogDebug($"Using app bin path '{APP_BIN_PATH}', you can override this by setting environment variable '{APP_BIN_PATH_ENV_NM}'");
         }
 
-        #region IClientMessageInspector Members
         public void AfterReceiveReply(ref Message reply, object correlationState)
         {
 
@@ -27,11 +31,15 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
             var clientUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
+            this.Logger().LogDebug($"Using client UPN '{clientUpn}'");
 
             if (string.IsNullOrWhiteSpace(clientUpn))
                 throw new Exception($"No identity/userPrincipalName set for the endpoint '{channel.RemoteAddress.Uri.OriginalString}'");
 
             var spn = $"host/{channel.RemoteAddress.Uri.Host}";
+            this.Logger().LogDebug($"Using SPN '{spn}'");
+
+            var ticket = GetKerberosTicket(spn, clientUpn);
 
             HttpRequestMessageProperty httpRequestMessage;
             object httpRequestMessageObject;
@@ -40,76 +48,94 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
                 httpRequestMessage = httpRequestMessageObject as HttpRequestMessageProperty;
                 if (string.IsNullOrEmpty(httpRequestMessage.Headers[AUTHORIZATION_HEADER]))
                 {
-                    httpRequestMessage.Headers[AUTHORIZATION_HEADER] = GetKerberosTicket(spn, clientUpn);
+                    httpRequestMessage.Headers[AUTHORIZATION_HEADER] = ticket;
                 }
             }
             else
             {
                 httpRequestMessage = new HttpRequestMessageProperty();
-                httpRequestMessage.Headers.Add(AUTHORIZATION_HEADER, GetKerberosTicket(spn, clientUpn));
+                httpRequestMessage.Headers.Add(AUTHORIZATION_HEADER, ticket);
                 request.Properties.Add(HttpRequestMessageProperty.Name, httpRequestMessage);
             }
             return null;
         }
         private string GetKerberosTicket(string spn, string clientUpn)
         {
+            this.Logger().LogDebug($"Getting TGT for UPN '{clientUpn}'");
             EnsureTgt(clientUpn);
 
+            this.Logger().LogDebug($"Getting client credentials for UPN '{clientUpn}' using the provided keytab file");
             using (var clientCredentials = GssCredentials.FromKeytab(clientUpn, CredentialUsage.Initiate))
             {
+                this.Logger().LogDebug($"Initiating kerberos client connection");
                 using (var initiator = new GssInitiator(credential: clientCredentials, spn: spn))
                 {
                     try
                     {
+                        this.Logger().LogDebug($"Getting kerberos ticket for UPN '{clientUpn}'");
                         var kerberosTicket = Convert.ToBase64String(initiator.Initiate(null));
                         Console.WriteLine($"Ticket: {kerberosTicket}");
                         return $"Negotiate {kerberosTicket}";
                     }
                     catch (GssException exception)
                     {
-                        Console.Error.WriteLine(exception.Message);
+                        this.Logger().LogError(exception.Message);
                         return string.Empty;
                     }
                 }
             }
         }
-        #endregion
 
-        private static void EnsureTgt(string principal)
+        private void EnsureTgt(string principal)
         {
             var expiry = GetTgtExpiry();
             if (expiry < DateTime.Now)
                 ObtainTgt(principal);
         }
 
-        private static DateTime GetTgtExpiry()
+        private DateTime GetTgtExpiry()
         {
+            var executablePath = Path.Combine(APP_BIN_PATH, "klist.exe");
+
+            if (!File.Exists(executablePath))
+                throw new FileNotFoundException("Please ensure to add the latest version of cf supply buildpack from https://github.com/macsux/route-service-auth-buildpack/releases", executablePath);
+
             try
             {
-                var klistResult = RunCmd(Path.Combine(CONTAINER_APP_BIN_PATH, "klist.exe"), null);
+                var klistResult = RunCmd(executablePath, null);
                 var tgtExpiryMatch = Regex.Match(klistResult, ".{17}(?=  krbtgt)");
                 if (tgtExpiryMatch.Success && DateTime.TryParse(tgtExpiryMatch.Value, out var expiry))
                     return expiry;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.Error.WriteLine(ex.Message);
+                this.Logger().LogError(exception.Message);
             }
 
             return DateTime.MinValue;
         }
-        private static void ObtainTgt(string principal)
+        private void ObtainTgt(string principal)
         {
-            RunCmd(Path.Combine(CONTAINER_APP_BIN_PATH, "kinit.exe"), $"-k -i {principal}");
+            var executablePath = Path.Combine(APP_BIN_PATH, "kinit.exe");
+
+            if (!File.Exists(executablePath))
+                throw new FileNotFoundException("Please ensure to add the latest version of cf supply buildpack from https://github.com/macsux/route-service-auth-buildpack/releases", executablePath);
+
+            RunCmd(executablePath, $"-k -i {principal}");
         }
 
-        private static string RunCmd(string cmd, string args)
+        private string RunCmd(string cmd, string args)
         {
-            var cmdsi = new ProcessStartInfo(cmd);
-            cmdsi.Arguments = args;
-            cmdsi.RedirectStandardOutput = true;
-            cmdsi.RedirectStandardError = true;
-            cmdsi.UseShellExecute = false;
+            var cmdsi = new ProcessStartInfo(cmd)
+            {
+                Arguments = args,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false
+            };
+
+            this.Logger().LogDebug($"Executing command '{cmd}' with args '{args}'");
+
             var proc = Process.Start(cmdsi);
             var result = proc.StandardOutput.ReadToEnd();
             var err = proc.StandardError.ReadToEnd();

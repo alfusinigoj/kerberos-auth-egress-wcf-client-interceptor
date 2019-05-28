@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.Execution;
@@ -8,6 +10,7 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Tools.MSBuild;
+using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
@@ -24,44 +27,38 @@ class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main () => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.Compile);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Parameter("ApiKey for the specified source.")] 
+    [Parameter("ApiKey for the specified source.")]
     readonly string ApiKey;
 
-    [Solution] 
+    [Parameter("Source url for the nuget/myget repository")]
+    readonly string Source = @"https://www.myget.org/F/ajaganathan/api/v2/package";
+
+    [Solution]
     readonly Solution Solution;
 
-    [GitRepository] 
-    readonly GitRepository GitRepository;
-
-    [GitVersion] 
+    [GitVersion]
     readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ProjectDirectory => SourceDirectory / "RouteServiceIwaWcfInterceptor";
     AbsolutePath ProjectFile => ProjectDirectory / "RouteServiceIwaWcfInterceptor.csproj";
-    AbsolutePath TestsDirectory => RootDirectory / "tests";
+    AbsolutePath NuspecFile => ProjectDirectory / "RouteServiceIwaWcfInterceptor.nuspec";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-    
-    string Branch => GitRepository.Branch;
-    string ChangelogFile => RootDirectory / "CHANGELOG.md";
-
-    string Source => @"c:\MyLocalNugetRepo";
 
     Target Clean => _ => _
-        .Before(Restore)
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
             EnsureCleanDirectory(ArtifactsDirectory);
         });
 
     Target Restore => _ => _
+        .DependsOn(Clean)
         .Executes(() =>
         {
             MSBuild(s => s
@@ -88,31 +85,52 @@ class Build : NukeBuild
     .DependsOn(Compile)
     .Executes(() =>
     {
-        var changelogUrl = GitRepository.GetGitHubBrowseUrl(ChangelogFile, branch: "master");
-
-        DotNetTasks.DotNetPack(s => s
-            .SetPackageReleaseNotes(changelogUrl)
-            .SetWorkingDirectory(ProjectDirectory)
-            .SetProject(ProjectFile)
-            .EnableNoBuild()
-            .SetConfiguration(Configuration)
-            .EnableIncludeSymbols()
-            .SetOutputDirectory(ArtifactsDirectory)
-            .SetVersion(GitVersion.NuGetVersionV2));
+        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {GitVersion.NuGetVersionV2}-beta -OutputDirectory {ArtifactsDirectory}");
     });
 
-    // Target Push => _ => _
-    // .DependsOn(Pack)
-    // //.Requires(() => ApiKey)
-    // .Requires(() => Source)
-    // .Executes(() =>
-    // {
-    //     GlobFiles(ArtifactsDirectory, "*.nupkg").NotEmpty()
-    //         .Where(x => !x.EndsWith(".symbols.nupkg"))
-    //         .ForEach(x => DotNetNuGetPush(s => s
-    //             .SetTargetPath(x)
-    //             .SetSource(Source)
-    //            // .SetApiKey(ApiKey)
-    //             ));
-    // });
+    Target Push => _ => _
+    .DependsOn(Pack)
+    .Requires(() => Source)
+    .Requires(() => !string.IsNullOrWhiteSpace(ApiKey) ||  Path.IsPathRooted(Source))
+    .Executes(() =>
+    {
+        GlobFiles(ArtifactsDirectory, "*.nupkg").NotEmpty()
+            .Where(x => !x.EndsWith(".symbols.nupkg"))
+            .ForEach(x =>
+            {
+                if (Path.IsPathRooted(Source))
+                {
+                    RunProcess("nuget.exe", $"add {Path.Combine(ArtifactsDirectory, x)} -Source {Source}");
+                }
+                else
+                {
+                    DotNetTasks.DotNetNuGetPush(s => s
+                        .SetApiKey(ApiKey)
+                        .SetTargetPath(x)
+                        .SetSource(Source));
+                }
+            });
+    });
+
+    private void RunProcess(string processFullName, string argument)
+    {
+        var startInfo = new ProcessStartInfo(processFullName)
+        {
+            Arguments = argument,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+
+        var process = Process.Start(startInfo);
+        var result = process.StandardOutput.ReadToEnd();
+        var error = process.StandardError.ReadToEnd();
+
+        if (!string.IsNullOrWhiteSpace(error))
+            throw new Exception(error);
+
+        Console.Write(result);
+
+        process.WaitForExit();
+    }
 }
