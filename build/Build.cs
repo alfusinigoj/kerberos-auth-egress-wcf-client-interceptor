@@ -85,12 +85,13 @@ class Build : NukeBuild
     .DependsOn(Compile)
     .Executes(() =>
     {
-        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {GitVersion.NuGetVersionV2}-beta -OutputDirectory {ArtifactsDirectory}");
+        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {GitVersion.NuGetVersionV2}-beta -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
     });
 
     Target Push => _ => _
     .DependsOn(Pack)
     .Requires(() => Source)
+    .Requires(() => Configuration == "Release")
     .Requires(() => !string.IsNullOrWhiteSpace(ApiKey) ||  Path.IsPathRooted(Source))
     .Executes(() =>
     {
