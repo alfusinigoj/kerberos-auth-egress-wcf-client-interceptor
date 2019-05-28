@@ -35,6 +35,6 @@ Note: This package is installed from https://www.myget.org/feed/ajaganathan/pack
 		...
 	</system.serviceModel>
 
-8. To see debug logs, please set the log level to "Debug", via environment variable "Logger:LogLevel:Default"
+8. To see debug logs, please set the log level to "Debug", via environment variable "Logging:LogLevel:Default"
 
 ============================================================================================================================================
