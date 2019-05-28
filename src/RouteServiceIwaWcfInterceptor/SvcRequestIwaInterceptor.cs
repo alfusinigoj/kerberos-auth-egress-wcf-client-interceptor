@@ -83,7 +83,7 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
                     {
                         this.Logger().LogDebug($"Getting kerberos ticket for UPN '{clientUpn}'");
                         var kerberosTicket = Convert.ToBase64String(initiator.Initiate(null));
-                        this.Logger().LogDebug($"Ticket: {kerberosTicket}");
+                        this.Logger().LogTrace($"Ticket: {kerberosTicket}");
                         return $"Negotiate {kerberosTicket}";
                     }
                     catch (GssException exception)
