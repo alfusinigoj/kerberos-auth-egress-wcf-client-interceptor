@@ -37,4 +37,5 @@ This package will add a Wcf client interceptor which will injects kerberos ticke
   ```
 8. To see debug logs, please set the log level to "Debug" or "Trace", via environment variable "PivotalIwaWcfClientInterceptor:LogLevel:Default" 
 
-Note: The dev packages are available at https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor
+Note: 1) The dev packages are available at https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor
+      2) The packages are still in beta version as it still depends on a beta version of GssKerberos package.

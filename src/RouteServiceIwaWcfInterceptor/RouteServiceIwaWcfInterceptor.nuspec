@@ -19,6 +19,7 @@
   <files>
     <file src="krb5.ini" target="Content" />
     <file src="readme.txt" target="" />
-    <file src="Web.config.transform" target="Content" />
+    <file src="Web.config.install.xdt" target="Content" />
+    <file src="Web.config.uninstall.xdt" target="Content" />
   </files>
 </package>
