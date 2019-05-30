@@ -44,7 +44,7 @@ class Build : NukeBuild
     [GitVersion]
     readonly GitVersion GitVersion;
 
-    string version = "1.0.0";
+    string version = "1.0.1";
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ProjectDirectory => SourceDirectory / "RouteServiceIwaWcfInterceptor";
