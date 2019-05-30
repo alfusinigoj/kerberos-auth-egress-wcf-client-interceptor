@@ -44,6 +44,8 @@ class Build : NukeBuild
     [GitVersion]
     readonly GitVersion GitVersion;
 
+    string version = "0.6.0";
+
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ProjectDirectory => SourceDirectory / "RouteServiceIwaWcfInterceptor";
     AbsolutePath ProjectFile => ProjectDirectory / "RouteServiceIwaWcfInterceptor.csproj";
@@ -74,9 +76,9 @@ class Build : NukeBuild
                 .SetTargetPath(Solution)
                 .SetTargets("Rebuild")
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(GitVersion.GetNormalizedAssemblyVersion())
-                .SetFileVersion(GitVersion.GetNormalizedFileVersion())
-                .SetInformationalVersion(GitVersion.InformationalVersion)
+                .SetAssemblyVersion($"{version}.0")
+                .SetFileVersion($"{version}.0")
+                .SetInformationalVersion($"{version}.0")
                 .SetMaxCpuCount(Environment.ProcessorCount)
                 .SetNodeReuse(IsLocalBuild));
         });
@@ -85,7 +87,7 @@ class Build : NukeBuild
     .DependsOn(Compile)
     .Executes(() =>
     {
-        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {GitVersion.NuGetVersionV2}-beta -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
+        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {version}-beta -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
     });
 
     Target Push => _ => _

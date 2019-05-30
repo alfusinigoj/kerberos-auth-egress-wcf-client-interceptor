@@ -41,13 +41,22 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
             var clientUpn = ConfigurationManager.AppSettings["ClientUserPrincipalName"];
-            this.Logger().LogDebug($"Using client UPN '{clientUpn}'");
 
             if (string.IsNullOrWhiteSpace(clientUpn))
                 throw new Exception($"ClientUserPrincipalName is not set in AppSettings");
 
-            var targetServiceUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
-            this.Logger().LogDebug($"Using TargetUPN '{targetServiceUpn}'");
+            this.Logger().LogDebug($"Using client UPN '{clientUpn}'");
+
+            string targetServiceUpn;
+            if (channel.RemoteAddress.Identity == null)
+            {
+                targetServiceUpn = $"host/{channel.RemoteAddress.Uri.Host}";
+                this.Logger().LogWarning($"Using Target SPN '{targetServiceUpn}' as Identity section is not provided, with the target Service Account");
+            }
+            else
+                targetServiceUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
+
+            this.Logger().LogDebug($"Using Target UPN '{targetServiceUpn}'");
 
             var ticket = GetKerberosTicket(targetServiceUpn, clientUpn);
 
