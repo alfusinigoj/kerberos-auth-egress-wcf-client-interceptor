@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.GssKerberos;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.ServiceModel;
@@ -39,16 +40,16 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
 
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
-            var clientUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
+            var clientUpn = ConfigurationManager.AppSettings["ClientUserPrincipalName"];
             this.Logger().LogDebug($"Using client UPN '{clientUpn}'");
 
             if (string.IsNullOrWhiteSpace(clientUpn))
-                throw new Exception($"No identity/userPrincipalName set for the endpoint '{channel.RemoteAddress.Uri.OriginalString}'");
+                throw new Exception($"ClientUserPrincipalName is not set in AppSettings");
 
-            var spn = $"host/{channel.RemoteAddress.Uri.Host}";
-            this.Logger().LogDebug($"Using SPN '{spn}'");
+            var targetServiceUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
+            this.Logger().LogDebug($"Using TargetUPN '{targetServiceUpn}'");
 
-            var ticket = GetKerberosTicket(spn, clientUpn);
+            var ticket = GetKerberosTicket(targetServiceUpn, clientUpn);
 
             HttpRequestMessageProperty httpRequestMessage;
             object httpRequestMessageObject;
@@ -68,7 +69,7 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
             }
             return null;
         }
-        private string GetKerberosTicket(string spn, string clientUpn)
+        private string GetKerberosTicket(string targetServiceUpn, string clientUpn)
         {
             this.Logger().LogDebug($"Getting TGT for UPN '{clientUpn}'");
             EnsureTgt(clientUpn);
@@ -77,7 +78,7 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
             using (var clientCredentials = GssCredentials.FromKeytab(clientUpn, CredentialUsage.Initiate))
             {
                 this.Logger().LogDebug($"Initiating kerberos client connection");
-                using (var initiator = new GssInitiator(credential: clientCredentials, spn: spn))
+                using (var initiator = new GssInitiator(credential: clientCredentials, spn: targetServiceUpn))
                 {
                     try
                     {

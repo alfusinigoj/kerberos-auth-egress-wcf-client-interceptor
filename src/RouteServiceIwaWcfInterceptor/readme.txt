@@ -14,9 +14,13 @@ Note: This package is installed from https://www.myget.org/feed/ajaganathan/pack
 
 5. Set the app bin path using the environment variable 'APP_BIN_PATH', if not the default path used is 'C:\Users\vcap\app\bin'
 
-6. SPN will be automatically resolved from the url. For. e.g, if the svc endpoint is 'http://foo.bar/myservice.svc', the SPN resolved will be 'host/foo.bar'
+6. Set the correct client UPN in AppSettings with key 'ClientUserPrincipalName' as below (this section will be already added by the package)
 
-7. Client's UPN has to be provided in the client/endpoint/identity configuration as in the sample below.
+	<appSettings>
+		<add key="ClientUserPrincipalName" value="client_username@domain" />
+	</appSettings>
+
+7. Target service UPN has to be provided in the client/endpoint/identity configuration as in the sample below.
 
 	<system.serviceModel>
 		...
@@ -28,7 +32,7 @@ Note: This package is installed from https://www.myget.org/feed/ajaganathan/pack
 					name="BasicHttpBinding_IService"
 					behaviorConfiguration ="myIwaInterceptorBehavior">
 					<identity>
-						<userPrincipalName value="abc@mydomain.com" />
+						<userPrincipalName value="target_user@domain" />
 					</identity>
 		  </endpoint>
 		</client>
