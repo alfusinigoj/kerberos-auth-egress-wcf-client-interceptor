@@ -2,8 +2,6 @@
 Important Instructions
 ============================================================================================================================================
 
-Note: This package is installed from https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor
-
 1. Modify "krb5.ini" file with appropriate values (the one loaded now is just a template)
 
 2. Add the "keytab file" for the user which the wcf client uses to connect to the service, make sure to set the properties to "Copy Always" with build action "None"
@@ -14,9 +12,13 @@ Note: This package is installed from https://www.myget.org/feed/ajaganathan/pack
 
 5. Set the app bin path using the environment variable 'APP_BIN_PATH', if not the default path used is 'C:\Users\vcap\app\bin'
 
-6. SPN will be automatically resolved from the url. For. e.g, if the svc endpoint is 'http://foo.bar/myservice.svc', the SPN resolved will be 'host/foo.bar'
+6. Set the correct client UPN in AppSettings with key 'ClientUserPrincipalName' as below (this section will be already added by the package)
 
-7. Client's UPN has to be provided in the client/endpoint/identity configuration as in the sample below.
+	<appSettings>
+		<add key="ClientUserPrincipalName" value="client_username@domain" />
+	</appSettings>
+
+7. Target service UPN has to be provided in the client/endpoint/identity configuration as in the sample below. If not, system will try to use the SPN 'host/foo.bar' (based on the below sample)
 
 	<system.serviceModel>
 		...
@@ -28,7 +30,7 @@ Note: This package is installed from https://www.myget.org/feed/ajaganathan/pack
 					name="BasicHttpBinding_IService"
 					behaviorConfiguration ="myIwaInterceptorBehavior">
 					<identity>
-						<userPrincipalName value="abc@mydomain.com" />
+						<userPrincipalName value="target_user@domain" />
 					</identity>
 		  </endpoint>
 		</client>
@@ -36,5 +38,7 @@ Note: This package is installed from https://www.myget.org/feed/ajaganathan/pack
 	</system.serviceModel>
 
 8. To see debug logs, please set the log level to "Debug" or "Trace", via environment variable "PivotalIwaWcfClientInterceptor:LogLevel:Default"
+
+Note: The dev packages are available at https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor
 
 ============================================================================================================================================
