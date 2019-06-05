@@ -44,7 +44,7 @@ class Build : NukeBuild
     [GitVersion]
     readonly GitVersion GitVersion;
 
-    string version = "1.0.0";
+    string version = "1.1.0";
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ProjectDirectory => SourceDirectory / "RouteServiceIwaWcfInterceptor";
@@ -87,7 +87,7 @@ class Build : NukeBuild
     .DependsOn(Compile)
     .Executes(() =>
     {
-        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {version}-alpha -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
+        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {version}-beta -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
     });
 
     Target Push => _ => _

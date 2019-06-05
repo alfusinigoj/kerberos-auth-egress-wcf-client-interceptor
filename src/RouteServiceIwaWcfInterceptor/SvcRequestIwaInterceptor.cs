@@ -40,43 +40,50 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
 
         public object BeforeSendRequest(ref Message request, IClientChannel channel)
         {
-            var clientUpn = ConfigurationManager.AppSettings["ClientUserPrincipalName"];
-
-            if (string.IsNullOrWhiteSpace(clientUpn))
-                throw new Exception($"ClientUserPrincipalName is not set in AppSettings");
-
-            this.Logger().LogDebug($"Using client UPN '{clientUpn}'");
-
-            string targetServiceUpn;
-            if (channel.RemoteAddress.Identity == null)
+            try
             {
-                targetServiceUpn = $"host/{channel.RemoteAddress.Uri.Host}";
-                this.Logger().LogWarning($"Using Target SPN '{targetServiceUpn}' as Identity section is not provided, with the target Service Account");
-            }
-            else
-                targetServiceUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
-
-            this.Logger().LogDebug($"Using Target UPN '{targetServiceUpn}'");
-
-            var ticket = GetKerberosTicket(targetServiceUpn, clientUpn);
-
-            HttpRequestMessageProperty httpRequestMessage;
-            object httpRequestMessageObject;
-            if (request.Properties.TryGetValue(HttpRequestMessageProperty.Name, out httpRequestMessageObject))
-            {
-                httpRequestMessage = httpRequestMessageObject as HttpRequestMessageProperty;
-                if (string.IsNullOrEmpty(httpRequestMessage.Headers[AUTHORIZATION_HEADER]))
+                if (channel.RemoteAddress.Identity == null)
                 {
-                    httpRequestMessage.Headers[AUTHORIZATION_HEADER] = ticket;
+                    this.Logger().LogWarning($"Skipping kerberosticket injection for endpoint {channel.RemoteAddress.Uri} because identity (upn) is not set!");
+                    return string.Empty;
+                }
+
+                var clientUpn = ConfigurationManager.AppSettings["ClientUserPrincipalName"];
+
+                if (string.IsNullOrWhiteSpace(clientUpn))
+                    throw new Exception($"ClientUserPrincipalName is not set in AppSettings");
+
+                this.Logger().LogDebug($"Using client UPN '{clientUpn}'");
+
+                var targetServiceUpn = (string)channel.RemoteAddress.Identity.IdentityClaim.Resource;
+
+                this.Logger().LogDebug($"Using Target UPN '{targetServiceUpn}'");
+
+                var ticket = GetKerberosTicket(targetServiceUpn, clientUpn);
+
+                HttpRequestMessageProperty httpRequestMessage;
+                object httpRequestMessageObject;
+                if (request.Properties.TryGetValue(HttpRequestMessageProperty.Name, out httpRequestMessageObject))
+                {
+                    httpRequestMessage = httpRequestMessageObject as HttpRequestMessageProperty;
+                    if (string.IsNullOrEmpty(httpRequestMessage.Headers[AUTHORIZATION_HEADER]))
+                    {
+                        httpRequestMessage.Headers[AUTHORIZATION_HEADER] = ticket;
+                    }
+                }
+                else
+                {
+                    httpRequestMessage = new HttpRequestMessageProperty();
+                    httpRequestMessage.Headers.Add(AUTHORIZATION_HEADER, ticket);
+                    request.Properties.Add(HttpRequestMessageProperty.Name, httpRequestMessage);
                 }
             }
-            else
+            catch (Exception exception)
             {
-                httpRequestMessage = new HttpRequestMessageProperty();
-                httpRequestMessage.Headers.Add(AUTHORIZATION_HEADER, ticket);
-                request.Properties.Add(HttpRequestMessageProperty.Name, httpRequestMessage);
+                this.Logger().LogError($"WcfInterceptor error occurred, with exception {exception}");
             }
-            return null;
+         
+            return string.Empty;
         }
         private string GetKerberosTicket(string targetServiceUpn, string clientUpn)
         {

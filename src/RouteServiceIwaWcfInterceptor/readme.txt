@@ -18,7 +18,7 @@ Important Instructions
 		<add key="ClientUserPrincipalName" value="client_username@domain" />
 	</appSettings>
 
-7. Target service UPN has to be provided in the client/endpoint/identity configuration as in the sample below. If not, system will try to use the SPN 'host/foo.bar' (based on the below sample)
+7. Target service UPN has to be provided in the client/endpoint/identity configuration as in the sample below, else will ignore kerberos ticket injection for that endpoint
 
 	<system.serviceModel>
 		...
