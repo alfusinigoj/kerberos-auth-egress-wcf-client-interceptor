@@ -87,7 +87,7 @@ class Build : NukeBuild
     .DependsOn(Compile)
     .Executes(() =>
     {
-        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {version}-alpha -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
+        RunProcess("nuget.exe", $"pack {ProjectFile} -Version {version}-beta -OutputDirectory {ArtifactsDirectory} -Properties Configuration={Configuration}");
     });
 
     Target Push => _ => _
