@@ -4,6 +4,8 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
+using System.Security;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
@@ -85,6 +87,9 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
          
             return string.Empty;
         }
+
+        [HandleProcessCorruptedStateExceptions]
+        [SecurityCritical]
         private string GetKerberosTicket(string targetServiceUpn, string clientUpn)
         {
             this.Logger().LogDebug($"Getting TGT for UPN '{clientUpn}'");
