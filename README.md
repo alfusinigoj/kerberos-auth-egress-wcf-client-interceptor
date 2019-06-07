@@ -10,7 +10,7 @@ This package will add a Wcf client interceptor which will injects kerberos ticke
 1. Modify "krb5.ini" file with appropriate values (the one loaded now is just a template)
 2. Add the "keytab file" for the user which the wcf client uses to connect to the service, make sure to set the properties to "Copy Always" with build action "None"
 3. Add the supply buildpack from "https://github.com/macsux/route-service-auth-buildpack/releases" in the CF manifest (preferably the latest release)
-4. Set the kerberos configuration file using environment variable 'KRB5_CONFIG', if not the default path used is 'C:\Users\vcap\app\krb5.ini'
+4. Set the kerberos configuration file using environment variable 'KRB5_CONFIG' in the app manifest. for e.g KRB5_CONFIG: "C:\Users\vcap\app\krb5.ini", if not it liios into the bin directory by default
 5. Set the app bin path using the environment variable 'APP_BIN_PATH', if not the default path used is 'C:\Users\vcap\app\bin'
 6. Set the correct client UPN in AppSettings with key 'ClientUserPrincipalName' as below (this section will be already added by the package)
 ```xml

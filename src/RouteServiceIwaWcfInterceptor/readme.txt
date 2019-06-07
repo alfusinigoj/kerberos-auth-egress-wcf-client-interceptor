@@ -9,7 +9,7 @@ Important Instructions
 3. Add the supply buildpack from "https://github.com/macsux/route-service-auth-buildpack/releases" in the CF manifest (preferably the latest release). 
    IMPORTANT: Make sure the application is built/published with target platform 'x64'
 
-4. Set the kerberos configuration file using environment variable 'KRB5_CONFIG', if not the default path used is 'C:\Users\vcap\app\krb5.ini'
+4. Set the kerberos configuration file using environment variable 'KRB5_CONFIG' in the app manifest. for e.g KRB5_CONFIG: "C:\Users\vcap\app\krb5.ini", if not it liios into the bin directory by default
 
 5. Set the app bin path using the environment variable 'APP_BIN_PATH', if not the default path used is 'C:\Users\vcap\app\bin'
 

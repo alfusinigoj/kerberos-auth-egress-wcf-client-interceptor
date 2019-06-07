@@ -18,18 +18,13 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
         const string APP_BIN_PATH_ENV_NM = "APP_BIN_PATH";
         const string CONTAINER_APP_DEFAULT_BIN_PATH = @"C:\Users\vcap\app\bin";
         const string KBBS_CONFIG_FILE_LOCATION_ENV_NM = "KRB5_CONFIG";
-        const string KBBS_CONFIG_FILE_LOCATION_DEFAULT = @"C:\Users\vcap\app\krb5.ini";
         readonly string APP_BIN_PATH;
         private const string AUTHORIZATION_HEADER = "Authorization";
+        string kbbsConfigLocation;
 
         public SvcRequestIwaInterceptor()
         {
-            var kbbsConfigLocation = Environment.GetEnvironmentVariable(KBBS_CONFIG_FILE_LOCATION_ENV_NM);
-
-            if (string.IsNullOrWhiteSpace(kbbsConfigLocation))
-                Environment.SetEnvironmentVariable(KBBS_CONFIG_FILE_LOCATION_ENV_NM, KBBS_CONFIG_FILE_LOCATION_DEFAULT);
-
-            this.Logger().LogDebug($"Using kbbs config file location '{kbbsConfigLocation}, can be overriden by setting  environment variable '{KBBS_CONFIG_FILE_LOCATION_ENV_NM}'");
+            kbbsConfigLocation = Environment.GetEnvironmentVariable(KBBS_CONFIG_FILE_LOCATION_ENV_NM);
 
             APP_BIN_PATH = Environment.GetEnvironmentVariable(APP_BIN_PATH_ENV_NM) ?? CONTAINER_APP_DEFAULT_BIN_PATH;
             this.Logger().LogDebug($"Using app bin path '{APP_BIN_PATH}', you can override this by setting environment variable '{APP_BIN_PATH_ENV_NM}'");
@@ -48,6 +43,20 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
                 {
                     this.Logger().LogWarning($"Skipping kerberosticket injection for endpoint {channel.RemoteAddress.Uri} because identity (upn) is not set!");
                     return string.Empty;
+                }
+
+                if (string.IsNullOrWhiteSpace(kbbsConfigLocation))
+                {
+                    this.Logger().LogWarning($"Environment variable '{KBBS_CONFIG_FILE_LOCATION_ENV_NM}' is not set! So trying to use kerberos config file from bin folder '{APP_BIN_PATH}'");
+                    kbbsConfigLocation = Path.Combine(APP_BIN_PATH, "krb5.ini");
+                }
+
+                this.Logger().LogDebug($"Using kbbs config file location '{kbbsConfigLocation}'");
+
+                if (!File.Exists(kbbsConfigLocation))
+                {
+                    var errMessage = $"File '{kbbsConfigLocation}' does not exist!";
+                    throw new FileNotFoundException(errMessage);
                 }
 
                 var clientUpn = ConfigurationManager.AppSettings["ClientUserPrincipalName"];
@@ -84,7 +93,7 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
             {
                 this.Logger().LogError($"WcfInterceptor error occurred, with exception {exception}");
             }
-         
+
             return string.Empty;
         }
 
