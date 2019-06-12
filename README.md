@@ -1,7 +1,6 @@
 ### PivotalServices.WcfClient.Kerberos.Interceptor
-Dev versions of this package is now available in https://www.myget.org/F/ajaganathan/api/v3/index.json OR directly download or install from https://www.myget.org/feed/ajaganathan/package/nuget/PivotalServices.WcfClient.Kerberos.Interceptor
 
-Stable versions are available at nuget.org (please refer to the note at the end for more details)
+Stable versions are available at www.nuget.org (please refer to the note at the end for more details)
 
 This package will add a Wcf client interceptor which will injects kerberos ticket for egress requests. This should be used together with the supply buildpack https://github.com/macsux/route-service-auth-buildpack/releases
 
@@ -37,5 +36,6 @@ This package will add a Wcf client interceptor which will injects kerberos ticke
   ```
 8. To see debug logs, please set the log level to "Debug" or "Trace", via environment variable "PivotalIwaWcfClientInterceptor:LogLevel:Default" 
 
-Note: 1) The dev/alpha packages are available at https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor
-      2) The packages are still in beta version as it still depends on a beta version of GssKerberos package.
+##### Notes
+1. The dev/alpha packages are available at https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor, feed https://www.myget.org/F/ajaganathan/api/v3/index.json
+2. The packages are still in beta version as it still depends on a beta version of GssKerberos package.
