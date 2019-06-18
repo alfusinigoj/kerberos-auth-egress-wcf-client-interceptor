@@ -16,7 +16,7 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
         {
             clientRuntime.MessageInspectors.Add(new SvcRequestIwaInterceptor());
 
-            if(Convert.ToBoolean(ConfigurationManager.AppSettings["ImpersonateWithLoggedInUser"]))
+            if(Convert.ToBoolean(ConfigurationManager.AppSettings["ImpersonateClientUser"]))
                 clientRuntime.MessageInspectors.Add(new ImpersonateInterceptor());
         }
 

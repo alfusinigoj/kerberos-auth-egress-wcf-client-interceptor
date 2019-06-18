@@ -4,7 +4,7 @@
   </appSettings>
   <appSettings>
     <add key="ClientUserPrincipalName" value="{Client UPN in the format username@domain}" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
-    <add key="ImpersonateWithLoggedInUser" value="false" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
+    <add key="ImpersonateClientUser" value="false" xdt:Transform="InsertIfMissing" xdt:Locator="Match(key)"/>
   </appSettings>
   <runtime xdt:Transform="InsertIfMissing">
     <legacyCorruptedStateExecptionPolicy enabled="true" xdt:Transform="InsertIfMissing"/>
