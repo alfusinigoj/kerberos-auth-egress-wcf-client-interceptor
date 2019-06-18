@@ -1,4 +1,6 @@
-﻿using System.ServiceModel.Channels;
+﻿using System;
+using System.Configuration;
+using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 
@@ -13,6 +15,9 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
         {
             clientRuntime.MessageInspectors.Add(new SvcRequestIwaInterceptor());
+
+            if(Convert.ToBoolean(ConfigurationManager.AppSettings["ImpersonateWithLoggedInUser"]))
+                clientRuntime.MessageInspectors.Add(new ImpersonateInterceptor());
         }
 
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
