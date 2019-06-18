@@ -74,7 +74,8 @@ class Build : NukeBuild
                 .SetTargetPath(Solution)
                 .SetTargets("Rebuild")
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(GitVersion.GetNormalizedAssemblyVersion())
+                //.SetAssemblyVersion(GitVersion.GetNormalizedAssemblyVersion())
+                .SetAssemblyVersion("1.0.0.0") //For the sake of buildpack configuring behaviour extension
                 .SetFileVersion(GitVersion.GetNormalizedFileVersion())
                 .SetInformationalVersion(GitVersion.InformationalVersion)
                 .SetMaxCpuCount(Environment.ProcessorCount)
