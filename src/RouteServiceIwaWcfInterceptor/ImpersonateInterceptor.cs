@@ -10,7 +10,7 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
     {
         const string CF_IMPERSONATED_IDENTITY_HEADER = "X-Cf-Impersonated-Identity";
 
-        public void AfterReceiveReply(ref Message reply, object correlationState)
+        public void AfterReceiveReply(ref Message reply, object correlationState) 
         {
 
         }
