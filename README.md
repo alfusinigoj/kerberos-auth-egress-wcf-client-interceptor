@@ -16,7 +16,13 @@ This package will add a Wcf client interceptor which will injects kerberos ticke
 		<add key="ClientUserPrincipalName" value="client_username@domain" />
   </appSettings>
 ```
-4. Target service UPN has to be provided in the client/endpoint/identity configuration as in the sample below. If not, system will try to use the SPN 'host/foo.bar' (based on the below sample)
+4. Set `ImpersonateClientUser` to `true` if you need to impersonate the svc user with the client user account (this section will be already added by the package, default is `false`)
+```xml
+  <appSettings>
+		<add key="ImpersonateClientUser" value="false" />
+  </appSettings>
+```
+5. Target service UPN has to be provided in the client/endpoint/identity configuration as in the sample below. If not, system will try to use the SPN 'host/foo.bar' (based on the below sample)
 ```xml
   <system.serviceModel>
 		<client>
@@ -33,7 +39,7 @@ This package will add a Wcf client interceptor which will injects kerberos ticke
 		</client>
 	</system.serviceModel>
   ```
-5. To see debug logs, please set the log level to "Debug" or "Trace", via environment variable "PivotalIwaWcfClientInterceptor:LogLevel:Default" 
+6. To see debug logs, please set the log level to "Debug" or "Trace", via environment variable "PivotalIwaWcfClientInterceptor:LogLevel:Default" 
 
 ##### Notes
 1. The dev/alpha packages are available at https://www.myget.org/feed/ajaganathan/package/nuget/Pivotal.WcfClient.Kerberos.Interceptor, feed https://www.myget.org/F/ajaganathan/api/v3/index.json

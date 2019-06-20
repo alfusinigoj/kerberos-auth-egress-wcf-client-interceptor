@@ -47,7 +47,6 @@ namespace Pivotal.RouteServiceIwaWcfInterceptor
 
                 if (string.IsNullOrWhiteSpace(kbbsConfigLocation))
                 {
-                    this.Logger().LogWarning($"Environment variable '{KBBS_CONFIG_FILE_LOCATION_ENV_NM}' is not set! So trying to use kerberos config file from bin folder '{APP_BIN_PATH}'");
                     kbbsConfigLocation = Path.Combine(APP_BIN_PATH, "krb5.ini");
                 }
 
