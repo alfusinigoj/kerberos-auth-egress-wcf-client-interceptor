@@ -189,7 +189,7 @@ class Build : NukeBuild
         }
         catch (Exception)
         {
-            Logger.Log(LogLevel.Normal, $"Release with name {releaseName} not found.. so creating new...");
+            Logger.Log(LogLevel.Normal, $"Release with name {releaseName} not found.. so creating new..."); 
 
             var newRelease = new NewRelease(releaseName)
             {
