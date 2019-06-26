@@ -209,9 +209,10 @@ class Build : NukeBuild
             client.Repository.Release.DeleteAsset(owner, repoName, existingAsset.Id);
         }
 
-        Logger.Log(LogLevel.Normal, $"Uploading assert {existingAsset.Name}...");
-
         var releaseAssetUpload = new ReleaseAssetUpload(packageName, "application/zip", File.OpenRead(artifactFullPath), null);
+
+        Logger.Log(LogLevel.Normal, $"Uploading assert {releaseAssetUpload.FileName}...");
+
         var releaseAsset = client.Repository.Release.UploadAsset(release, releaseAssetUpload).Result;
 
         Logger.Block(releaseAsset.BrowserDownloadUrl);
